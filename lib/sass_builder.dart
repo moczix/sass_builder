@@ -3,13 +3,18 @@ import 'dart:async';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as p;
 import 'package:sass/sass.dart' as sass;
+import 'package:yaml/yaml.dart';
 
 import 'src/build_importer.dart';
 
 final outputStyleKey = 'outputStyle';
+final loadPathsKey = 'loadPaths';
 
-Builder sassBuilder(BuilderOptions options) =>
-    new SassBuilder(outputStyle: options.config[outputStyleKey]);
+Builder sassBuilder(BuilderOptions options) {
+  print('RAARAAA');
+  return new SassBuilder(outputStyle: options.config[outputStyleKey], loadPaths: options.config[loadPathsKey]);
+}
+    
 
 PostProcessBuilder sassSourceCleanup(BuilderOptions options) =>
     new FileDeletingBuilder(['.scss', '.sass'],
@@ -21,10 +26,12 @@ class SassBuilder implements Builder {
   static final _defaultOutputStyle = sass.OutputStyle.expanded;
   final String _outputExtension;
   final String _outputStyle;
+  final Iterable<String> _loadPaths;
 
-  SassBuilder({String outputExtension: '.css', String outputStyle})
+  SassBuilder({String outputExtension: '.css', String outputStyle, YamlList loadPaths})
       : this._outputExtension = outputExtension,
-        this._outputStyle = outputStyle ?? _defaultOutputStyle.toString();
+        this._outputStyle = outputStyle ?? _defaultOutputStyle.toString(),
+        this._loadPaths = Iterable.castFrom(loadPaths.toList()) ?? [];
 
   @override
   Future build(BuildStep buildStep) async {
@@ -42,7 +49,8 @@ class SassBuilder implements Builder {
         await buildStep.readAsString(inputId),
         syntax: sass.Syntax.forPath(inputId.path),
         importers: [new BuildImporter(buildStep)],
-        style: _getValidOutputStyle());
+        style: _getValidOutputStyle(),
+        loadPaths: _loadPaths,);
 
     // Write the builder output.
     final outputId = inputId.changeExtension(_outputExtension);

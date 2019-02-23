@@ -98,6 +98,7 @@ To configure options for the builder see the `build_config`
 
 * `outputStyle`: Supports `expanded` or `compressed`. Defaults to `expanded` in
   dev mode, and `compressed` in release mode.
+* `loadPaths`: default is empty
 
 Example that compresses output in dev mode:
 
@@ -108,4 +109,6 @@ targets:
       sass_builder:
         options:
           outputStyle: compressed
+          loadPaths:
+            - /some/path
 ```
